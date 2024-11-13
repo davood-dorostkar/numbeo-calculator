@@ -70,6 +70,7 @@ function addColumnAndTotal() {
             row.appendChild(quantityCell);
             quantityCell.style.width= "20px";
         });
+        window.ignoreRows = false;
 
         // Add the total row
         const totalRow = document.createElement("tr");
@@ -114,7 +115,7 @@ function updateTotal() {
 
     // Get all rows again for recalculating the total
     const rows = document.querySelectorAll(".data_wide_table tr:not(:first-child)");
-
+    const currency = rows[0].querySelector("td:nth-child(2) .first_currency").textContent.match(/([\d.]+)\s*([\p{Sc}]+)/u)[2];
     rows.forEach(row => {
         if (shouldSkipRow(row)) return; // Skip rows with 'category_title'
 
@@ -123,14 +124,15 @@ function updateTotal() {
         if (basePriceElement) {
             const basePriceText = basePriceElement.textContent;
             // Remove commas and parse the price
-            const basePrice = parseFloat(basePriceText.replace("€", "").replace(/,/g, "").trim());
+            const basePrice = parseFloat(basePriceText.replace(/,/g, "").match(/([\d.]+)\s*([\p{Sc}]+)/u)[1].trim());
+            // const basePrice = parseFloat(basePriceText.replace("€", "").replace(/,/g, "").trim());
 
             const quantity = parseFloat(row.querySelector("td:last-child input").value) || 0;
             total += basePrice * quantity;
         }
     });
-
-    totalCell.textContent = `Total: €${total.toFixed(2)}`;
+    window.ignoreRows = false;
+    totalCell.textContent = `Total: ${currency} ${total.toFixed(2)}`;
 }
 
 // Function to toggle visibility of the added elements
@@ -152,6 +154,7 @@ function resetQuantities() {
             quantityInput.value = 0; // Reset quantity to 0
         }
     });
+    window.ignoreRows = false;
 
     // Clear the quantities in chrome storage as well
     chrome.storage.sync.set({ "quantities": {} }, function() {
