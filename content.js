@@ -1,76 +1,85 @@
-// content.js
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === "addQuantityColumn") {
-        // Select the target table
-        const table = document.querySelector(".data_wide_table.new_bar_table");
+// URL pattern to match
+const urlPattern = /^https:\/\/www\.numbeo\.com\/cost-of-living\/in\/.+/;
 
-        if (!table) {
-            sendResponse({ status: "failure", message: "Table not found on the page." });
-            return;
-        }
+function addColumnAndTotal() {
+    const table = document.querySelector(".data_wide_table");
+    if (!table) return;
 
-        // Add a new column header for Quantity
+    // Check if columns already exist
+    if (!table.querySelector('.quantity-header')) {
+        // Add quantity header to the table
         const headerRow = table.querySelector("tr");
-        const newHeader = document.createElement("th");
-        newHeader.textContent = "Quantity";
-        headerRow.appendChild(newHeader);
+        const quantityHeader = document.createElement("th");
+        quantityHeader.classList.add('quantity-header');
+        quantityHeader.textContent = "Quantity";
+        headerRow.appendChild(quantityHeader);
 
-        // Add a new cell with a text box in each row and calculate the total
+        // Select all rows except the header
         const rows = table.querySelectorAll("tr:not(:first-child)");
-        rows.forEach((row) => {
-            // Create the quantity input field
-            const newCell = document.createElement("td");
-            const inputBox = document.createElement("input");
-            inputBox.type = "number";
-            inputBox.value = "0";
-            inputBox.style.width = "50px";
-            inputBox.style.textAlign = "center";
-            
-            // Append the input box to the cell
-            newCell.appendChild(inputBox);
-            row.appendChild(newCell);
 
-            // Add an event listener to recalculate the total when quantity changes
-            inputBox.addEventListener("input", updateTotal);
+        // Add input fields to each row, skipping rows with 'category_title'
+        rows.forEach(row => {
+            if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+
+            const quantityCell = document.createElement("td");
+            const quantityInput = document.createElement("input");
+            quantityInput.type = "number";
+            quantityInput.value = 0;
+            quantityInput.min = 0;
+            quantityInput.addEventListener("input", updateTotal);
+            quantityCell.appendChild(quantityInput);
+            row.appendChild(quantityCell);
         });
 
-        // Add a row below the table for displaying the total
+        // Add the total row
         const totalRow = document.createElement("tr");
-        const totalCell = document.createElement("td");
-        totalCell.colSpan = headerRow.children.length; // Span the total cell across the entire table
-        totalCell.style.textAlign = "right";
-        totalCell.style.fontWeight = "bold";
-        totalCell.textContent = "Total: €0.00";
-        totalRow.appendChild(totalCell);
+        totalRow.innerHTML = `<td colspan="${headerRow.children.length - 1}"></td><td id="total-cell">Total: €0.00</td>`;
         table.appendChild(totalRow);
 
-        // Function to update the total based on quantities and base prices
-        function updateTotal() {
-            let total = 0;
-        
-            rows.forEach((row) => {
-                // Get the base price from the second <td> in the row
-                const basePriceElement = row.querySelector("td:nth-child(2) .first_currency");
-                
-                // Only proceed if the base price element exists
-                if (basePriceElement) {
-                    const basePriceText = basePriceElement.textContent;
-                    const basePrice = parseFloat(basePriceText.replace("€", "").trim());
-        
-                    // Get the quantity from the input field in the new column
-                    const quantity = parseFloat(row.querySelector("td:last-child input").value) || 0;
-        
-                    // Calculate the subtotal for this row and add it to the total
-                    total += basePrice * quantity;
-                }
-            });
-        
-            // Update the total display
-            totalCell.textContent = `Total: €${total.toFixed(2)}`;
-        }
-        
+        window.totalCell = document.getElementById("total-cell");
+    }
+}
 
-        // Send a success response back to popup.js
-        sendResponse({ status: "success" });
+function updateTotal() {
+    let total = 0;
+
+    // Get all rows again for recalculating the total
+    const rows = document.querySelectorAll(".data_wide_table tr:not(:first-child)");
+
+    rows.forEach(row => {
+        if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+
+        const basePriceElement = row.querySelector("td:nth-child(2) .first_currency");
+        
+        if (basePriceElement) {
+            const basePriceText = basePriceElement.textContent;
+            // Remove commas and parse the price
+            const basePrice = parseFloat(basePriceText.replace("€", "").replace(/,/g, "").trim());
+
+            const quantity = parseFloat(row.querySelector("td:last-child input").value) || 0;
+            total += basePrice * quantity;
+        }
+    });
+
+    totalCell.textContent = `Total: €${total.toFixed(2)}`;
+}
+
+
+// Function to toggle visibility of the added elements
+function toggleVisibility(isVisible) {
+    document.querySelectorAll('.quantity-header, td:last-child, #total-cell').forEach(el => {
+        el.style.display = isVisible ? '' : 'none';
+    });
+}
+
+// Listen for messages from the popup for visibility changes
+chrome.runtime.onMessage.addListener((request) => {
+    if (request.action === "toggleVisibility") {
+        toggleVisibility(request.isVisible);
     }
 });
+
+// Automatically add the column and total if on the correct URL pattern
+if (urlPattern.test(window.location.href)) {
+    addColumnAndTotal();
+}
