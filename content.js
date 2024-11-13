@@ -12,7 +12,7 @@ function addColumnAndTotal() {
         quantityHeader.classList.add('quantity-header');
         quantityHeader.textContent = "Quantity";
         headerRow.appendChild(quantityHeader);
-
+        
         // Select all rows except the header
         const rows = table.querySelectorAll("tr:not(:first-child)");
 
