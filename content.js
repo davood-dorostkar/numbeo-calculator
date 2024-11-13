@@ -55,7 +55,7 @@ function addColumnAndTotal() {
 
         // Add input fields to each row, skipping rows with 'category_title'
         rows.forEach((row, index) => {
-            if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+            if (shouldSkipRow(row)) return; // Skip rows with 'category_title'
 
             const quantityCell = document.createElement("td");
             const quantityInput = document.createElement("input");
@@ -84,6 +84,29 @@ function addColumnAndTotal() {
 
     // Load stored quantities when the page is loaded
     loadQuantities();
+    updateTotal();
+}
+
+function shouldSkipRow(row) {
+    const categoryTitle = row.querySelector(".category_title");
+
+    // If the title matches one of the conditions, ignore subsequent rows until the next category title
+    if (categoryTitle) {
+        const titleText = categoryTitle.textContent.trim();
+        if (titleText === "Buy Apartment Price" || titleText === "Salaries And Financing") {
+            window.ignoreRows = true;
+        }
+        else{
+            window.ignoreRows = false;
+        }
+        return true;
+    }
+    else{
+        if (window.ignoreRows) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function updateTotal() {
@@ -93,7 +116,7 @@ function updateTotal() {
     const rows = document.querySelectorAll(".data_wide_table tr:not(:first-child)");
 
     rows.forEach(row => {
-        if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+        if (shouldSkipRow(row)) return; // Skip rows with 'category_title'
 
         const basePriceElement = row.querySelector("td:nth-child(2) .first_currency");
         
