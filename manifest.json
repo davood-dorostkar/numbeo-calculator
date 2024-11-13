@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "My Chrome Extension",
+    "name": "Davood numbeo calculator",
     "version": "1.0",
-    "description": "A simple Chrome extension example.",
+    "description": "calculates your custom costs that matches your personal lifestyle, based on the data in numbeo site.",
     "action": {
         "default_popup": "popup.html",
         "default_icon": {
@@ -17,7 +17,8 @@
     "permissions": [
         "activeTab",
         "storage",
-        "scripting"
+        "scripting",
+        "alarms" 
     ],
     "content_scripts": [
         {

@@ -1,6 +1,6 @@
-document.getElementById("slider").addEventListener("input", function(event) {
-    const sliderOn = event.target.value === "1";  // 1 means ON, 0 means OFF
-    
+document.getElementById("slider").addEventListener("change", function(event) {
+    const sliderOn = event.target.checked;  // true means ON, false means OFF
+
     // Save the slider state to chrome storage
     chrome.storage.sync.set({ "sliderOn": sliderOn }, function() {
         // Send message to content script to update visibility
@@ -14,5 +14,5 @@ document.getElementById("slider").addEventListener("input", function(event) {
 chrome.storage.sync.get("sliderOn", function(data) {
     const sliderOn = data.sliderOn !== undefined ? data.sliderOn : false; // Default to off
     const slider = document.getElementById("slider");
-    slider.value = sliderOn ? "1" : "0";  // Set slider position (1 is on, 0 is off)
+    slider.checked = sliderOn;  // Set the slider position (checked is on, unchecked is off)
 });

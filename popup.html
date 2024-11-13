@@ -4,32 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Extension Popup</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            width: 200px;
-        }
-        .slider-container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .slider-container span {
-            font-size: 12px;
-        }
-        .slider {
-            width: 100px;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css"> 
 </head>
 <body>
-    <h3>Toggle Table Visibility</h3>
+    <h3>Numbeo Cost Calculator</h3>
     <div class="slider-container">
         <span>Off</span>
-        <input type="range" min="0" max="1" step="1" id="slider" class="slider">
+        <label class="switch">
+            <input type="checkbox" id="slider">
+            <span class="slider"></span>
+        </label>
         <span>On</span>
     </div>
+    <p>by: davood.dorostkar.ut[at]gmail.com</p>
     <script src="popup.js"></script>
 </body>
 </html>

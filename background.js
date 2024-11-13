@@ -3,8 +3,15 @@
 // Listen for when the extension is installed or updated
 chrome.runtime.onInstalled.addListener(() => {
     console.log('Extension installed or updated.');
-    // You can perform actions like setting default values or creating context menus here
-});
+    
+    // Create a periodic alarm (1 minute period)
+    chrome.alarms.create('myAlarm', { periodInMinutes: 1 });
+  });
+
+chrome.runtime.onInstalled.addListener(function() {
+    // Set up alarms here or listen for other events
+    console.log("Service worker is active");
+  });
 
 // Listen for messages from the popup or content scripts
 // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -22,7 +29,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 // You can also set up alarms, listeners for tabs, etc.
 // Example: Set up a periodic alarm
-chrome.alarms.create("myAlarm", { periodInMinutes: 1 });
+// chrome.alarms.create("myAlarm", { periodInMinutes: 1 });
 
 // Listen for the alarm
 chrome.alarms.onAlarm.addListener((alarm) => {
