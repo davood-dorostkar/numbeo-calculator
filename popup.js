@@ -9,6 +9,15 @@ document.getElementById("slider").addEventListener("change", function(event) {
         });
     });
 });
+document.getElementById('resetBtn').addEventListener('click', function() {
+    // Clear all quantities in storage
+    chrome.storage.sync.set({ "quantities": {} }, function() {
+        // Notify the content script to reset quantities in the input fields
+        chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: "resetQuantities" });
+        });
+    });
+});
 
 // Set the slider state based on stored value when popup is opened
 chrome.storage.sync.get("sliderOn", function(data) {

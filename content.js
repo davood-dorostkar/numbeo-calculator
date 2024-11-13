@@ -140,10 +140,33 @@ function toggleVisibility(isVisible) {
     });
 }
 
+function resetQuantities() {
+    // Select all rows except the header
+    const rows = document.querySelectorAll(".data_wide_table tr:not(:first-child)");
+
+    rows.forEach(row => {
+        if (shouldSkipRow(row)) return; // Skip row if it matches the conditions
+
+        const quantityInput = row.querySelector("td:last-child input");
+        if (quantityInput) {
+            quantityInput.value = 0; // Reset quantity to 0
+        }
+    });
+
+    // Clear the quantities in chrome storage as well
+    chrome.storage.sync.set({ "quantities": {} }, function() {
+        // Optionally update the total if needed
+        updateTotal();
+    });
+}
+
 // Listen for messages from the popup for visibility changes
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "toggleVisibility") {
         toggleVisibility(request.sliderOn);
+    }
+    else if (request.action === "resetQuantities") {
+        resetQuantities();
     }
 });
 
