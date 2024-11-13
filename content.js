@@ -36,6 +36,8 @@ function addColumnAndTotal() {
         table.appendChild(totalRow);
 
         window.totalCell = document.getElementById("total-cell");
+        totalCell.style.fontSize = "20px";  // Make the font bigger
+        totalCell.style.fontWeight = "bold";  // Make the font bold
     }
 }
 
