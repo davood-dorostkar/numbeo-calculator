@@ -1,4 +1,3 @@
-// URL pattern to match
 const urlPattern = /^https:\/\/www\.numbeo\.com\/cost-of-living\/in\/.+/;
 
 function addColumnAndTotal() {
@@ -64,7 +63,6 @@ function updateTotal() {
     totalCell.textContent = `Total: €${total.toFixed(2)}`;
 }
 
-
 // Function to toggle visibility of the added elements
 function toggleVisibility(isVisible) {
     document.querySelectorAll('.quantity-header, td:last-child, #total-cell').forEach(el => {
@@ -75,7 +73,7 @@ function toggleVisibility(isVisible) {
 // Listen for messages from the popup for visibility changes
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "toggleVisibility") {
-        toggleVisibility(request.isVisible);
+        toggleVisibility(request.sliderOn);
     }
 });
 
@@ -83,3 +81,9 @@ chrome.runtime.onMessage.addListener((request) => {
 if (urlPattern.test(window.location.href)) {
     addColumnAndTotal();
 }
+
+// Get the initial visibility state from chrome storage and apply it
+chrome.storage.sync.get("sliderOn", function(data) {
+    const sliderOn = data.sliderOn !== undefined ? data.sliderOn : false;
+    toggleVisibility(sliderOn);  // Apply visibility based on stored value
+});
