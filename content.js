@@ -103,7 +103,8 @@ function shouldSkipRow(row) {
         return true;
     }
     else{
-        if (window.ignoreRows) {
+        const isCar = row.querySelector('td').textContent.includes('New Car');
+        if (window.ignoreRows || isCar) {
             return true;
         }
     }
