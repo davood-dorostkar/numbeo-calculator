@@ -40,6 +40,12 @@ function addColumnAndTotal() {
     const table = document.querySelector(".data_wide_table");
     if (!table) return;
 
+    // Add CSS dynamically
+    const style = document.createElement('style');
+    style.textContent = `.highlight-row {background-color: #ffcc00;}`;
+
+    document.head.appendChild(style);
+
     // Check if columns already exist
     if (!table.querySelector('.quantity-header')) {
         // Add quantity header to the table
@@ -66,6 +72,17 @@ function addColumnAndTotal() {
                 updateTotal();
                 storeQuantities(); // Update quantities in storage whenever the input changes
             });
+
+            // Highlight the row on focus
+            quantityInput.addEventListener("focus", function () {
+                row.querySelector("td").classList.add("highlight-row");
+            });
+
+            // Remove highlight on blur
+            quantityInput.addEventListener("blur", function () {
+                row.querySelector("td").classList.remove("highlight-row");
+            });
+
             quantityCell.appendChild(quantityInput);
             row.appendChild(quantityCell);
             quantityCell.style.width = "20px";
