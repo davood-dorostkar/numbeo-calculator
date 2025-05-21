@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "Davood numbeo calculator",
+    "name": "Numbeo Calculator",
     "version": "1.0",
     "description": "calculates your custom costs that matches your personal lifestyle, based on the data in numbeo site.",
     "icons": {

@@ -1,12 +1,11 @@
 const urlPattern = /^https:\/\/www\.numbeo\.com\/cost-of-living\/in\/.+/;
 
-// Function to store the quantities in Chrome storage
 function storeQuantities() {
     const quantities = {};
     const rows = document.querySelectorAll(".data_wide_table tr");
 
     rows.forEach((row, index) => {
-        if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+        if (row.querySelector(".category_title")) return; 
 
         const quantityInput = row.querySelector("td:last-child input");
         if (quantityInput) {
@@ -14,11 +13,9 @@ function storeQuantities() {
         }
     });
 
-    // Save quantities to chrome storage
     chrome.storage.sync.set({ "quantities": quantities });
 }
 
-// Function to retrieve quantities from chrome storage
 function loadQuantities() {
     chrome.storage.sync.get("quantities", function (data) {
         const quantities = data.quantities || {};
@@ -26,11 +23,11 @@ function loadQuantities() {
         const rows = document.querySelectorAll(".data_wide_table tr");
 
         rows.forEach((row, index) => {
-            if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+            if (row.querySelector(".category_title")) return;
 
             const quantityInput = row.querySelector("td:last-child input");
             if (quantityInput && quantities[index] !== undefined) {
-                quantityInput.value = quantities[index]; // Set the stored quantity
+                quantityInput.value = quantities[index]; 
             }
         });
     });
@@ -40,15 +37,12 @@ function addColumnAndTotal() {
     const table = document.querySelector(".data_wide_table");
     if (!table) return;
 
-    // Add CSS dynamically
     const style = document.createElement('style');
     style.textContent = `.highlight-row {background-color: #ffcc00;}`;
 
     document.head.appendChild(style);
 
-    // Check if columns already exist
     if (!table.querySelector('.quantity-header')) {
-        // Add quantity header to the table
         const headerRow = table.querySelector("tr");
         const quantityHeader = document.createElement("th");
         quantityHeader.classList.add('quantity-header');
@@ -56,12 +50,10 @@ function addColumnAndTotal() {
         headerRow.appendChild(quantityHeader);
         quantityHeader.style.width = "20px";
 
-        // Select all rows except the header
         const rows = table.querySelectorAll("tr");
 
-        // Add input fields to each row, skipping rows with 'category_title'
         rows.forEach((row, index) => {
-            if (shouldSkipRow(row)) return; // Skip rows with 'category_title'
+            if (shouldSkipRow(row)) return;
 
             const quantityCell = document.createElement("td");
             const quantityInput = document.createElement("input");
@@ -70,15 +62,13 @@ function addColumnAndTotal() {
             quantityInput.min = 0;
             quantityInput.addEventListener("input", function () {
                 updateTotal();
-                storeQuantities(); // Update quantities in storage whenever the input changes
+                storeQuantities();
             });
 
-            // Highlight the row on focus
             quantityInput.addEventListener("focus", function () {
                 row.querySelector("td").classList.add("highlight-row");
             });
 
-            // Remove highlight on blur
             quantityInput.addEventListener("blur", function () {
                 row.querySelector("td").classList.remove("highlight-row");
             });
@@ -89,18 +79,16 @@ function addColumnAndTotal() {
         });
         window.ignoreRows = false;
 
-        // Add the total row
         const totalRow = document.createElement("tr");
         totalRow.innerHTML = `<td colspan="${headerRow.children.length - 1}"></td><td id="total-cell">Total: €0.00</td>`;
         table.appendChild(totalRow);
 
         window.totalCell = document.getElementById("total-cell");
-        totalCell.style.fontSize = "20px";  // Make the font bigger
-        totalCell.style.fontWeight = "bold";  // Make the font bold
+        totalCell.style.fontSize = "20px"; 
+        totalCell.style.fontWeight = "bold"; 
         totalCell.style.width = "20px";
     }
 
-    // Load stored quantities when the page is loaded
     loadQuantities();
     updateTotal();
 }
@@ -108,7 +96,6 @@ function addColumnAndTotal() {
 function shouldSkipRow(row) {
     const categoryTitle = row.querySelector(".category_title");
 
-    // If the title matches one of the conditions, ignore subsequent rows until the next category title
     if (categoryTitle) {
         const titleText = categoryTitle.textContent.trim();
         if (titleText === "Buy Apartment Price" || titleText === "Salaries And Financing") {
@@ -132,34 +119,30 @@ function shouldSkipRow(row) {
 function updateTotal() {
     let total = 0;
 
-    // Get all rows again for recalculating the total
     const rows = document.querySelectorAll(".data_wide_table tr");
     const currency = rows[1].querySelector("td:nth-child(2) .first_currency").textContent.match(/([\d.]+)\s*([\p{Sc}]+)/u)[2];
     rows.forEach(row => {
-        if (shouldSkipRow(row)) return; // Skip rows with 'category_title'
+        if (shouldSkipRow(row)) return; 
 
         const basePriceElement = row.querySelector("td:nth-child(2) .first_currency");
 
         if (basePriceElement) {
             const basePriceText = basePriceElement.textContent;
-            // Remove commas and parse the price
             let basePrice;
             try {
                 basePrice = parseFloat(basePriceText.replace(/,/g, "").match(/([\d.]+)\s*([\p{Sc}]+)/u)[1].trim());
             } catch (error) {
-                return; // Skip this iteration if parsing fails
+                return; 
             }
 
             const quantity = parseFloat(row.querySelector("td:last-child input").value) || 0;
             total += basePrice * quantity;
-            // console.log(basePrice);
         }
     });
     window.ignoreRows = false;
     totalCell.textContent = `Total: ${currency} ${total.toFixed(2)}`;
 }
 
-// Function to toggle visibility of the added elements
 function toggleVisibility(isVisible) {
     document.querySelectorAll('.quantity-header, td:last-child, #total-cell').forEach(el => {
         el.style.display = isVisible ? '' : 'none';
@@ -167,27 +150,23 @@ function toggleVisibility(isVisible) {
 }
 
 function resetQuantities() {
-    // Select all rows except the header
     const rows = document.querySelectorAll(".data_wide_table tr");
 
     rows.forEach(row => {
-        if (shouldSkipRow(row)) return; // Skip row if it matches the conditions
+        if (shouldSkipRow(row)) return;
 
         const quantityInput = row.querySelector("td:last-child input");
         if (quantityInput) {
-            quantityInput.value = 0; // Reset quantity to 0
+            quantityInput.value = 0;
         }
     });
     window.ignoreRows = false;
 
-    // Clear the quantities in chrome storage as well
     chrome.storage.sync.set({ "quantities": {} }, function () {
-        // Optionally update the total if needed
         updateTotal();
     });
 }
 
-// Listen for messages from the popup for visibility changes
 chrome.runtime.onMessage.addListener((request) => {
     if (request.action === "toggleVisibility") {
         toggleVisibility(request.sliderOn);
@@ -197,30 +176,25 @@ chrome.runtime.onMessage.addListener((request) => {
     }
 });
 
-// Automatically add the column and total if on the correct URL pattern
 if (urlPattern.test(window.location.href)) {
     addColumnAndTotal();
 }
 
-// Get the initial visibility state from chrome storage and apply it
 chrome.storage.sync.get("sliderOn", function (data) {
     const sliderOn = data.sliderOn !== undefined ? data.sliderOn : false;
-    toggleVisibility(sliderOn);  // Apply visibility based on stored value
+    toggleVisibility(sliderOn);  
 });
 
-// Load the quantity values from storage and update the inputs, then recalculate the total
 chrome.storage.sync.get("quantities", function (data) {
     const quantities = data.quantities || {};
 
-    // Select all rows except the header
     const rows = document.querySelectorAll(".data_wide_table tr");
 
     rows.forEach(row => {
-        if (row.querySelector(".category_title")) return; // Skip rows with 'category_title'
+        if (row.querySelector(".category_title")) return;
 
-        const rowIndex = Array.from(rows).indexOf(row); // Get the row index
+        const rowIndex = Array.from(rows).indexOf(row);
 
-        // If there's a stored quantity for this row, update the input value
         const quantityInput = row.querySelector("td:last-child input");
         if (quantityInput) {
             const storedQuantity = quantities[rowIndex] || 0;
@@ -228,6 +202,5 @@ chrome.storage.sync.get("quantities", function (data) {
         }
     });
 
-    // Recalculate the total after updating quantities
     updateTotal();
 });
